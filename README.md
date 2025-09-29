@@ -18,11 +18,14 @@
 ## Project Timeline:
 September 28, 2025
 - Preliminary Project Proposal submitted
+
 October, 2025
 - Initial setup of raspberry pi and camera.
 - Training and development of a machine learning model on google collab.
+
 November, 2025
 - Testing of a machine learning model on raspberry pi.
+  
 December, 2025
 - Making extra features of the project
 - Alert system
