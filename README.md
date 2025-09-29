@@ -43,9 +43,9 @@ Smart doorbells can sometimes depend heavily on cloud infrastructure, which can 
 
 
 ## Deliverables
-Training and optimization of a face detection model that is able to detect different people
-Deployment of the face detection model on a Raspberry Pi
-Optionally: making an alert system that alerts the person when people or other objects are detected
+- Training and optimization of a face detection model that is able to detect different people
+- Deployment of the face detection model on a Raspberry Pi
+- Optionally: making an alert system that alerts the person when people or other objects are detected
 
 ## System Blocks
 
@@ -54,7 +54,8 @@ Optionally: making an alert system that alerts the person when people or other o
 ## Background: 
 Edge devices like Raspberry Pi are increasingly used for deploying ML systems in real-world settings. A common home application is a smart doorbell that can identify visitors and
 provide useful alerts without relying on heavy cloud infrastructure.
-• Goal: Use Raspberry Pi with a camera module to design a smart doorbell that can detect people
+
+Goal: Use Raspberry Pi with a camera module to design a smart doorbell that can detect people
 and classify whether they are recognized (e.g., known household members) or unknown.
 
 ## HW/SW Requirements: 
