@@ -4,12 +4,14 @@
 **Team Members**: Aidan Shepston, Jack Guo, Marilyn De Leon Matul
 
 ## Team Members Responsibilities: 
-Aidan Shepston
+**Aidan Shepston**
 - ML Model management
-Jack Guo
+  
+**Jack Guo**
 - Hardware setup lead
 - Research
-Marilyn De Leon Matul
+  
+**Marilyn De Leon Matul**
 - Software lead implement ML pipeline 
 - Documentation 
 
