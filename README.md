@@ -47,7 +47,7 @@ Optionally: making an alert system that alerts the person when people or other o
 
 ## System Blocks
 
-!["SystemBlocks.png"]
+![Image Of System Blocks](./SystemBlocks.png)
 
 ## Background: 
 Edge devices like Raspberry Pi are increasingly used for deploying ML systems in real-world settings. A common home application is a smart doorbell that can identify visitors and
