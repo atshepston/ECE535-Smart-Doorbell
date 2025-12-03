@@ -3,6 +3,9 @@ import os
 import numpy as np
 import tensorflow as tf
 
+
+model = tf.keras.models.load_model('siamese_embedding_model2.h5')
+
 def verify(model, image_path_1, image_path_2, detection_threshold=0.5):
 
     img1 = preprocess(image_path_1)
