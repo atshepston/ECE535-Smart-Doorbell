@@ -3,11 +3,11 @@ import os
 import numpy as np
 import tensorflow as tf
 
-interpreter = tf.lite.Interpreter(model_path="siamese_embedding_model.tflite")
+iinterpreter = tf.lite.Interpreter(model_path="siamese_embedding_model.tflite")
 interpreter.allocate_tensors()
 
-#input_details = interpreter.get_input_details()
-#output_details = interpreter.get_output_details()
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 def preprocess(file_path):
     byte_img = tf.io.read_file(file_path)
@@ -19,19 +19,20 @@ def preprocess(file_path):
     return img
 
 def get_embedding(interpreter, input_img):
-    # 1. Point to the input index
-    input_index = interpreter.get_input_details()[0]['index']
+    input_index = input_details[0]['index']
     
-    # 2. Add batch dimension (1, 100, 100, 3) - adjust based on your model input
-    input_tensor = np.expand_dims(input_img, axis=0).astype(np.float32)
+    if isinstance(input_img, tf.Tensor):
+        input_tensor = input_img.numpy().astype(np.float32)
+    else:
+        input_tensor = input_img.astype(np.float32)
     
-    # 3. Set the tensor
+
+    if len(input_tensor.shape) == 3:
+        input_tensor = np.expand_dims(input_tensor, axis=0)
+
     interpreter.set_tensor(input_index, input_tensor)
-    
-    # 4. Run inference
     interpreter.invoke()
     
-    # 5. Get the result
     output_index = output_details[0]['index']
     embedding = interpreter.get_tensor(output_index)
     
@@ -45,11 +46,11 @@ def verify(model, image_path_1, image_path_2, detection_threshold=0.5):
     img1_batch = tf.expand_dims(img1, axis=0)
     img2_batch = tf.expand_dims(img2, axis=0)
     
-  # embedding the images
+    #embedding the images
     embedding1 = get_embedding(interpreter, img1_batch)
     embedding2 = get_embedding(interpreter, img2_batch)
     
-    # 3. calculate Distance between embeddings
+    #calculate Distance between embeddings
     distance = np.linalg.norm(embedding1 - embedding2)
     
     print(f"Distance: {distance:.4f}")
@@ -63,8 +64,8 @@ def verify(model, image_path_1, image_path_2, detection_threshold=0.5):
 
 
 
-test_anchor_path = os.path.join('Images', 'anchor.jpg')
-test_pos_path = os.path.join('Images', 'camera_output.jpg')
+test_anchor_path = os.path.join('Test', 'anchor.jpeg')
+test_pos_path = os.path.join('Test', 'positive.jpg')
 
 print("--- Testing Match ---")
 verify(interpreter, test_anchor_path, test_pos_path, detection_threshold=0.6)
