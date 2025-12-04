@@ -1,8 +1,6 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow_datasets as tfds
-
 from TFLiteFaceDetector import UltraLightFaceDetecion
 
 # from sklearn.datasets import fetch_lfw_people

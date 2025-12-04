@@ -1,60 +1,63 @@
-from matplotlib import pyplot as plt
 import os
+
 import numpy as np
 import tensorflow as tf
+from matplotlib import pyplot as plt
 
-iinterpreter = tf.lite.Interpreter(model_path="siamese_embedding_model.tflite")
+interpreter = tf.lite.Interpreter(model_path="./FCSN/siamese_embedding_model.tflite")
+# iinterpreter = tf.lite.Interpreter(model_path="siamese_embedding_model.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
+
 def preprocess(file_path):
     byte_img = tf.io.read_file(file_path)
     img = tf.io.decode_jpeg(byte_img)
-    
-    img = tf.image.resize(img, (100,100))
+
+    img = tf.image.resize(img, (100, 100))
     img = img / 255.0
-    
+
     return img
 
+
 def get_embedding(interpreter, input_img):
-    input_index = input_details[0]['index']
-    
+    input_index = input_details[0]["index"]
+
     if isinstance(input_img, tf.Tensor):
         input_tensor = input_img.numpy().astype(np.float32)
     else:
         input_tensor = input_img.astype(np.float32)
-    
 
     if len(input_tensor.shape) == 3:
         input_tensor = np.expand_dims(input_tensor, axis=0)
 
     interpreter.set_tensor(input_index, input_tensor)
     interpreter.invoke()
-    
-    output_index = output_details[0]['index']
+
+    output_index = output_details[0]["index"]
     embedding = interpreter.get_tensor(output_index)
-    
+
     return embedding
 
-def verify(model, image_path_1, image_path_2, detection_threshold=0.5):
 
+def verify(model, image_path_1, image_path_2, detection_threshold=0.5):
     img1 = preprocess(image_path_1)
     img2 = preprocess(image_path_2)
-    
+
     img1_batch = tf.expand_dims(img1, axis=0)
     img2_batch = tf.expand_dims(img2, axis=0)
-    
-    #embedding the images
+
+    # embedding the images
     embedding1 = get_embedding(interpreter, img1_batch)
     embedding2 = get_embedding(interpreter, img2_batch)
-    
-    #calculate Distance between embeddings
+
+    # calculate Distance between embeddings
     distance = np.linalg.norm(embedding1 - embedding2)
-    
+
     print(f"Distance: {distance:.4f}")
-    
+
     if distance < detection_threshold:
         print("Result: Not the same person")
         return True, distance
@@ -63,9 +66,12 @@ def verify(model, image_path_1, image_path_2, detection_threshold=0.5):
         return False, distance
 
 
-
-test_anchor_path = os.path.join('Test', 'anchor.jpeg')
-test_pos_path = os.path.join('Test', 'positive.jpg')
+# test_anchor_path = os.path.join('Test', 'anchor.jpeg')
+# test_pos_path = os.path.join('Test', 'positive.jpg')
+# Reference
+test_anchor_path = os.path.join("./faceDetection/images/image.jpg")
+# Test
+test_pos_path = os.path.join("./faceDetection/images/image.jpg")
 
 print("--- Testing Match ---")
 verify(interpreter, test_anchor_path, test_pos_path, detection_threshold=0.6)
@@ -80,3 +86,5 @@ axs[0].axis("off")
 axs[1].imshow(preprocess(test_pos_path))
 axs[1].set_title("Detected person")
 axs[1].axis("off")
+
+plt.savefig("output.png")
