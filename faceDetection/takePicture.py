@@ -13,20 +13,21 @@ def takePicture():
 
     picam = Picamera2()
 
-    config = picam.create_preview_configuration(
-        transform=Transform(vflip=True, hflip=True)
+    # config = picam.create_preview_configuration(
+    #     transform=Transform(vflip=True, hflip=True)
+    # )
+    # picam.configure(config)
+    camera_config = picam.create_still_configuration(
+        main={"size": (2000, 1500)}, transform=Transform(vflip=True, hflip=True)
     )
-    config = picam.create_preview_configuration(
-        transform=Transform(vflip=True, hflip=True)
-    )
-    picam.configure(config)
-
+    picam.configure(camera_config)
     # picam.start_preview(Preview.DRM)
 
     picam.start()
     picam.capture_file(image_dir / filename)
 
     picam.close()
+    return image_dir / filename
 
 
 if __name__ == "__main__":

@@ -4,7 +4,8 @@ import time
 from pathlib import Path
 
 import cv2
-from TFLiteFaceDetector import UltraLightFaceDetecion
+
+from .TFLiteFaceDetector import UltraLightFaceDetecion
 
 parser = argparse.ArgumentParser(description="TFLite Face Detector")
 
@@ -34,26 +35,36 @@ def _save_crops(img, boxes, output_dir, prefix):
     h, w = img.shape[:2]
     saved = 0
 
+    cropped_images = []
+
     for idx, result in enumerate(boxes.astype(int)):
         x1, y1, x2, y2 = result
 
+        pad = int(0.1 * max(x2 - x1, y2 - y1))  # 10% padding
+        x1 -= pad
+        y1 -= pad
+        x2 += pad
+        y2 += pad
+        # Adding more padding
         # clamp to image bounds
-        x1 = max(0, min(x1, w))
-        x2 = max(0, min(x2, w))
-        y1 = max(0, min(y1, h))
-        y2 = max(0, min(y2, h))
+        x1 = max(0, x1)
+        y1 = max(0, y1)
+        x2 = min(w, x2)
+        y2 = min(h, y2)
 
         if x2 <= x1 or y2 <= y1:
             continue
 
         crop = img[y1:y2, x1:x2]
-        resized = cv2.resize(crop, (100, 100))
+        resized = cv2.resize(crop, (150, 150))
 
         filename = f"{prefix}_face{idx:03d}.png"
-        cv2.imwrite(os.path.join(output_dir, filename), resized)
+        output_name = os.path.join(output_dir, filename)
+        cv2.imwrite(output_name, resized)
         saved += 1
+        cropped_images.append(output_name)
 
-    return saved
+    return saved, cropped_images
 
 
 def image_inference(image_path, model_path, output_dir):
@@ -67,8 +78,9 @@ def image_inference(image_path, model_path, output_dir):
 
     base_name = os.path.splitext(os.path.basename(image_path))[0]
     # target_dir = os.path.join(output_dir, base_name)
-    saved = _save_crops(img, boxes, output_dir, prefix=base_name)
+    saved, cropped_images = _save_crops(img, boxes, output_dir, prefix=base_name)
     print(f"Saved {saved} face crops to {output_dir}")
+    return cropped_images
 
 
 def image_inference_box(image_path, model_path, color=(125, 255, 0)):

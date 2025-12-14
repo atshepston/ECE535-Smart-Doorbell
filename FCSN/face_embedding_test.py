@@ -10,6 +10,7 @@ import tensorflow as tf
 IMG_SIZE = 112
 
 interpreter = tf.lite.Interpreter(model_path="./FCSN/MobileFaceNet_9925_9680.tflite")
+# interpreter = tf.lite.Interpreter(model_path="./FCSN/siamese_embedding_model.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -54,12 +55,19 @@ def preprocess_colors(file_path):
 
 current_dir = Path().cwd()
 output_dir = current_dir / "faceDetection" / "outputs"
+image_dir = current_dir / "faceDetection" / "images"
+
+# latest = max(image_dir.glob("*.jpg"))
 latest = max(output_dir.glob("*.png"))
 anchorPath = Path("faceDetection/anchorImages/20251203_225434_749628_face000.png")
-test_path = Path("faceDetection/anchorImages/Afton_Smith_0001_face000.png")
+# anchorPath = Path("faceDetection/images/20251204_100222_479738.jpg")
+# anchorPath = Path("faceDetection/anchorImages/20251204_100222_479738_face000.png")
+# test_path = Path("faceDetection/images/20251204_100643_735812.jpg")
+test_path = Path("faceDetection/anchorImages/Aaron_Peirsol_0001_face000.png")
+# test_path = Path("faceDetection/anchorImages/20251204_100222_479738_face000.png")
 
 anchor_img = cv2.imread(anchorPath)
-test_img = cv2.imread(test_path)
+test_img = cv2.imread(latest)
 
 anchor_emb = get_embedding(anchor_img)
 test_emb = get_embedding(test_img)

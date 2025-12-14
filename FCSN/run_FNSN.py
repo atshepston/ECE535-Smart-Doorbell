@@ -1,11 +1,12 @@
 import os
+from pathlib import Path
 
 import cv2
 import numpy as np
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
-interpreter = tf.lite.Interpreter(model_path="./FCSN/siamese_embedding_model.tflite")
+interpreter = tf.lite.Interpreter(model_path="./FCSN/siamese_embedding_modelV2.tflite")
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -53,38 +54,38 @@ def verify(model, image_path_1, image_path_2, detection_threshold=0.6):
 
     if distance > detection_threshold:
         print("Result: Not the same person")
-        return True, distance
+        return False, distance
     else:
         print("Result: The same person")
-        return False, distance
+        return True, distance
 
 
 def preprocess(file_path):
     byte_img = tf.io.read_file(file_path)
     img = tf.io.decode_jpeg(byte_img)
 
-    img = tf.image.resize(img, (100, 100))
+    img = tf.image.resize(img, (150, 150))
     img = img / 255.0
 
     return img
 
 
-# Reference
-test_anchor_path = os.path.join("faceDetection/outputs/Afton_Smith_0001_face000.png")
-# Test
-test_pos_path = os.path.join("faceDetection/outputs/20251203_225434_749628_face000.png")
+def run_FNSN(test_anchor_path, test_pos_path):
+    # Reference
 
-print("--- Testing Match ---")
-verify(interpreter, test_anchor_path, test_pos_path, detection_threshold=1.0)
+    print("--- Testing Match ---")
+    result = verify(
+        interpreter, test_anchor_path, test_pos_path, detection_threshold=0.9
+    )
 
+    fig, axs = plt.subplots(1, 3, figsize=(10, 5))
 
-fig, axs = plt.subplots(1, 3, figsize=(10, 5))
+    axs[0].imshow(preprocess(test_anchor_path))
+    axs[0].set_title("Anchor")
+    axs[0].axis("off")
 
-axs[0].imshow(preprocess(test_anchor_path))
-axs[0].set_title("Anchor")
-axs[0].axis("off")
-
-axs[1].imshow(preprocess(test_pos_path))
-axs[1].set_title("Detected person")
-axs[1].axis("off")
-plt.savefig("output.png")
+    axs[1].imshow(preprocess(test_pos_path))
+    axs[1].set_title("Detected person")
+    axs[1].axis("off")
+    plt.savefig("output.png")
+    return result
