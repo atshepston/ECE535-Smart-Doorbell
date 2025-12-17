@@ -1,0 +1,146 @@
+import argparse
+import os
+import time
+from pathlib import Path
+
+import cv2
+
+from .TFLiteFaceDetector import UltraLightFaceDetecion
+
+parser = argparse.ArgumentParser(description="TFLite Face Detector")
+
+parser.add_argument(
+    "--net_type",
+    default="RFB",
+    type=str,
+    help="The network architecture ,optional: RFB (higher precision) or slim (faster)",
+)
+parser.add_argument("--img_path", type=str, help="Image path for inference")
+parser.add_argument("--video_path", type=str, help="Video path for inference")
+parser.add_argument(
+    "--output_dir",
+    type=str,
+    default="outputs",
+    help="Directory where cropped face images will be saved",
+)
+
+args = parser.parse_args()
+
+current_dir = Path().cwd()
+
+
+def _save_crops(img, boxes, output_dir, prefix):
+    os.makedirs(output_dir, exist_ok=True)
+
+    h, w = img.shape[:2]
+    saved = 0
+
+    cropped_images = []
+
+    for idx, result in enumerate(boxes.astype(int)):
+        x1, y1, x2, y2 = result
+
+        pad = int(0.1 * max(x2 - x1, y2 - y1))  # 10% padding
+        x1 -= pad
+        y1 -= pad
+        x2 += pad
+        y2 += pad
+        # Adding more padding
+        # clamp to image bounds
+        x1 = max(0, x1)
+        y1 = max(0, y1)
+        x2 = min(w, x2)
+        y2 = min(h, y2)
+
+        if x2 <= x1 or y2 <= y1:
+            continue
+
+        crop = img[y1:y2, x1:x2]
+        resized = cv2.resize(crop, (150, 150))
+
+        filename = f"{prefix}_face{idx:03d}.png"
+        output_name = os.path.join(output_dir, filename)
+        cv2.imwrite(output_name, resized)
+        saved += 1
+        cropped_images.append(output_name)
+
+    return saved, cropped_images
+
+
+def image_inference(image_path, model_path, output_dir):
+    fd = UltraLightFaceDetecion(model_path, conf_threshold=0.6)
+
+    img = cv2.imread(image_path)
+    if img is None:
+        raise FileNotFoundError(f"Could not read image from {image_path}")
+
+    boxes, scores = fd.inference(img)
+
+    base_name = os.path.splitext(os.path.basename(image_path))[0]
+    # target_dir = os.path.join(output_dir, base_name)
+    saved, cropped_images = _save_crops(img, boxes, output_dir, prefix=base_name)
+    print(f"Saved {saved} face crops to {output_dir}")
+    return cropped_images
+
+
+def image_inference_box(image_path, model_path, color=(125, 255, 0)):
+    fd = UltraLightFaceDetecion(model_path, conf_threshold=0.6)
+
+    img = cv2.imread(image_path)
+
+    boxes, scores = fd.inference(img)
+
+    for result in boxes.astype(int):
+        cv2.rectangle(img, (result[0], result[1]), (result[2], result[3]), color, 2)
+
+    # cv2.imshow("res", img)
+    cv2.imwrite("sample.jpg", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def video_inference(video, model_path, output_dir):
+    fd = UltraLightFaceDetecion(model_path, conf_threshold=0.88)
+
+    cap = cv2.VideoCapture(video)
+    if not cap.isOpened():
+        raise FileNotFoundError(f"Could not open video {video}")
+
+    base_name = os.path.splitext(os.path.basename(video))[0]
+    target_dir = os.path.join(output_dir, base_name)
+
+    frame_idx = 0
+    total_saved = 0
+    while True:
+        ret, frame = cap.read()
+
+        if not ret:
+            break
+
+        start_time = time.perf_counter()
+        boxes, scores = fd.inference(frame)
+        print(time.perf_counter() - start_time)
+
+        prefix = f"{base_name}_frame{frame_idx:05d}"
+        total_saved += _save_crops(frame, boxes, target_dir, prefix)
+        frame_idx += 1
+
+    cap.release()
+    print(f"Saved {total_saved} face crops to {target_dir}")
+
+
+if __name__ == "__main__":
+    filepath = f"./faceDetection/models/version-slim-320_without_postprocessing.tflite"
+    default_img_path = current_dir / "faceDetection" / "images"
+    output_dir = current_dir / "faceDetection" / "outputs"
+    latest = max(default_img_path.glob("*.jpg"))
+
+    if args.img_path:
+        latest = args.img_path
+    #     image_inference(args.img_path, filepath, args.output_dir)
+    image_inference(latest, filepath, output_dir)
+    # image_inference_box(latest, filepath)
+    # elif args.video_path:
+    #     video_inference(args.video_path, filepath, args.output_dir)
+    # else:
+    #     print("--img_path or --video_path must be filled")

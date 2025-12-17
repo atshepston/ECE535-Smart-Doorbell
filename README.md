@@ -79,5 +79,4 @@ https://arxiv.org/abs/1704.04861 - This paper describes a method to build light-
 
 https://github.com/Linzaer/Ultra-Light-Fast-Generic-Face-Detector-1MB - This is an open source light weight face detection algorithm which we could look at for inspiration in our own design. This model was written in python and C++ and could be a good starting point to get some ideas on how to create our own model. 
 
-https://arxiv.org/html/2311.15326 - This paper compares and contrasts a number of light weight facial recognition models which could once again start us in the right direction for our own development of a model. 
-
+https://arxiv.org/html/2311.15326 - This paper compares and contrasts a number of light weight facial recognition models which could once again start us in the right direction for our own development of a model.
