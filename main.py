@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 
 from faceDetection.inference_test import image_inference
@@ -10,16 +11,26 @@ modelFilepath = "./faceDetection/models/version-slim-320_without_postprocessing.
 output_dir = current_dir / "faceDetection" / "outputs"
 
 
-def main():
+def main(anchor_path: Path):
+    image_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     image_path = takePicture()
     cropped_images = image_inference(image_path, modelFilepath, output_dir)
-    anchor_path = "faceDetection/outputs/20251214_110402_450141_face000.png"
-    anchor_path = "faceDetection/anchorImages/anchorAidan.png"
     results = []
     for cropped_path in cropped_images:
-        results.append(run_FNSN(anchor_path, cropped_path))
+        results.append(run_FNSN(str(anchor_path), str(cropped_path)))
     print(results)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="Capture a snapshot and compare it to an anchor face image."
+    )
+    parser.add_argument(
+        "--anchor",
+        help="Path to the anchor image used for comparison.",
+    )
+    args = parser.parse_args()
+    anchor_path = Path(args.anchor)
+    main(anchor_path)

@@ -1,15 +1,35 @@
-# ECE 525 Smart Doorbell
+# ECE 535 Smart Doorbell
 
+## Running the System
+- Hardware: Run on a Raspberry Pi with the camera module connected and enabled (use `raspi-config` to enable the camera).
+- Environment: Activate the project’s Python environment with all dependencies installed (TensorFlow Lite, OpenCV, etc). This can be done using `uv sync` if installed, or `pip install .` in the parent directory. 
+- Command: From the repo root, run:
+  ```bash
+  python main.py --anchor path/to/anchorImage
+  ```
+  - Use `--anchor <path/to/anchor.png>` to point to a different known-face image.
+  - The script will create `faceDetection/images` and `faceDetection/outputs` if they are missing, capture a new photo, crop detected faces, and compare each crop to the anchor image.
+  - If you need to create anchor images, you can run the script once to get a cropped version, then use that version as found in `faceDetection/outputs`
+
+## Other Information
+
+## Project Organization
+- `main.py`: Entry point that captures an image, runs face detection, and compares detected faces to the anchor image.
+- `faceDetection/`: Camera capture (`takePicture.py`), face detection (`inference_test.py`), pretrained models, and image/output folders.
+  - `images/` where un-processed images are stored
+  - `outputs/` where cropped faces are stored
+- `FCSN/`: Face similarity network used to score detected faces against the anchor.
+- `SystemBlocks.png`: System-level block diagram.
 
 **Team Members**: Aidan Shepston, Jack Guo, Marilyn De Leon Matul
 
 ## Team Members Responsibilities: 
 **Aidan Shepston**
-- ML Model management
+- Hardware setup lead
   
 **Jack Guo**
-- Hardware setup lead
 - Research
+- ML Model management
   
 **Marilyn De Leon Matul**
 - Software lead implement ML pipeline 
